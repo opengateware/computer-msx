@@ -1,0 +1,39 @@
+# ==============================================================================
+# RTL
+# ==============================================================================
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "msx1.sv"]
+
+set_global_assignment -name VHDL_FILE          [file join $::quartus(qip_path) "bram.vhd"]
+set_global_assignment -name VHDL_FILE          [file join $::quartus(qip_path) "cv_clock.vhd"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "io_decoder.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "jt8255.v"]
+set_global_assignment -name VHDL_FILE          [file join $::quartus(qip_path) "keyboard.vhd"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "ls74.sv"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "memory_mapper.v"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "sdram.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "slots.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "tape.sv"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "joy2ps2.sv"]
+
+set_global_assignment -name MIF_FILE           [file join $::quartus(qip_path) "rom/cbios_main_msx1_eu.mif"]
+set_global_assignment -name MIF_FILE           [file join $::quartus(qip_path) "rom/cbios_main_msx1.mif"]
+set_global_assignment -name MIF_FILE           [file join $::quartus(qip_path) "rom/vy0010.mif"]
+
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/rom.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/rom_detect.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/konami.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/konami_scc.v"]
+set_global_assignment -name VHDL_FILE          [file join $::quartus(qip_path) "cart/scc_wave.vhd"]
+set_global_assignment -name VHDL_FILE          [file join $::quartus(qip_path) "cart/ram.vhd"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/ascii8.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/ascii16.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/gamemaster2.v"]
+set_global_assignment -name VERILOG_FILE       [file join $::quartus(qip_path) "cart/vy0010.v"]
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "cart/wd1793.sv"]
+
+# ==============================================================================
+# MODULES
+# ==============================================================================
+set_global_assignment -name QIP_FILE           [file join $::quartus(qip_path) "../modules/video-vdp18/index.qip"]
+set_global_assignment -name QIP_FILE           [file join $::quartus(qip_path) "../modules/cpu-t80/index.qip"]
+set_global_assignment -name QIP_FILE           [file join $::quartus(qip_path) "../modules/sound-jt49/index.qip"]

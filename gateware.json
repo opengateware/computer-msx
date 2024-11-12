@@ -1,0 +1,46 @@
+{
+    "name": "msx",
+    "displayName": "msx",
+    "description": "MSX Compatible Gateware IP Core",
+    "author": "boogermann",
+    "version": "0.1.0",
+    "license": "GPL-3.0-or-later",
+    "repository": "https://github.com/opengateware/computer-msx",
+    "keywords": [
+        "ecosystem:gateman"
+    ],
+    "scripts": {
+        "verilator": "echo \"Error: no simulation specified\" && exit 1",
+        "build:pocket": "quartus_sh --flow compile projects/msx_pocket.qpf",
+        "program:pocket": "quartus_pgm -m jtag -c 1 -o \"p;projects/output_files/msx_pocket.sof@1\""
+    },
+    "hardware": {
+        "id": "msx",
+        "name": "MSX",
+        "year": 1983,
+        "manufacturer": "Microsoft"
+    },
+    "release": {
+        "image": "docs/git-social.png",
+        "folders": {
+            "output_folder": "projects/output_files",
+            "pkg_folder": "pkg",
+            "meta_folder": "pkg/meta",
+            "stage_folder": "staging",
+            "release_folder": "release"
+        },
+        "target": {
+            "pocket": {
+                "release_file": "{author}.{core}_{version}_{date}-{target}"
+            }
+        }
+    },
+    "platforms": {
+        "pocket": "2.0.0"
+    },
+    "modules": {
+        "cpu-t80": "1.0.0",
+        "sound-jt49": "1.0.0",
+        "video-vdp18": "1.0.0"
+    }
+}

@@ -1,0 +1,5 @@
+# ==============================================================================
+# Quartus Prime QIP Index File
+# ==============================================================================
+set_global_assignment -name SYSTEMVERILOG_FILE [file join $::quartus(qip_path) "core_top.sv"]
+set_global_assignment -name QIP_FILE           [file join $::quartus(qip_path) "core_pll/core_pll.qip"]
