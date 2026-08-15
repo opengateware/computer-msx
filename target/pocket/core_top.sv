@@ -270,6 +270,9 @@ module core_top
          input  wire  [15:0] cont4_trig
      );
 
+     //Analogizer settings
+    localparam [7:0] ADDRESS_ANALOGIZER_CONFIG = 8'hF7;
+
     // not using the IR port, so turn off both the LED, and
     // disable the receive circuit to save power
     assign port_ir_tx         = 0;
@@ -280,19 +283,19 @@ module core_top
 
     // cart is unused, so set all level translators accordingly
     // directions are 0:IN, 1:OUT
-    assign cart_tran_bank3         = 8'hzz;
-    assign cart_tran_bank3_dir     = 1'b0;
-    assign cart_tran_bank2         = 8'hzz;
-    assign cart_tran_bank2_dir     = 1'b0;
-    assign cart_tran_bank1         = 8'hzz;
-    assign cart_tran_bank1_dir     = 1'b0;
-    assign cart_tran_bank0         = 4'hf;
-    assign cart_tran_bank0_dir     = 1'b1;
-    assign cart_tran_pin30         = 1'b0;  // reset or cs2, we let the hw control it by itself
-    assign cart_tran_pin30_dir     = 1'bz;
-    assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
-    assign cart_tran_pin31         = 1'bz;  // input
-    assign cart_tran_pin31_dir     = 1'b0;  // input
+    // assign cart_tran_bank3         = 8'hzz;
+    // assign cart_tran_bank3_dir     = 1'b0;
+    // assign cart_tran_bank2         = 8'hzz;
+    // assign cart_tran_bank2_dir     = 1'b0;
+    // assign cart_tran_bank1         = 8'hzz;
+    // assign cart_tran_bank1_dir     = 1'b0;
+    // assign cart_tran_bank0         = 4'hf;
+    // assign cart_tran_bank0_dir     = 1'b1;
+    // assign cart_tran_pin30         = 1'b0;  // reset or cs2, we let the hw control it by itself
+    // assign cart_tran_pin30_dir     = 1'bz;
+    // assign cart_pin30_pwroff_reset = 1'b0;  // hardware can control this
+    // assign cart_tran_pin31         = 1'bz;  // input
+    // assign cart_tran_pin31_dir     = 1'b0;  // input
 
     // link port is input only
     assign port_tran_so      = 1'bz;
@@ -532,6 +535,8 @@ module core_top
     wire [31:0] int_bridge_rd_data;
     wire [31:0] nvm_bridge_rd_data, nvm_bridge_rd_data_s;
 
+    wire [31:0] analogizer_bridge_rd_data;
+
     // Synchronize nvm_bridge_rd_data into clk_74a domain before usage
     synch_3 sync_nvm(nvm_bridge_rd_data, nvm_bridge_rd_data_s, clk_74a);
 
@@ -548,6 +553,9 @@ module core_top
             32'hFA000000: begin bridge_rd_data <= int_bridge_rd_data;   end // Status Low  [31:0]
             32'hFB000000: begin bridge_rd_data <= int_bridge_rd_data;   end // Status High [63:32]
             32'hFE000000: begin bridge_rd_data <= {29'h0, mapper_info}; end
+            {ADDRESS_ANALOGIZER_CONFIG,24'h0}: begin
+                                bridge_rd_data <= analogizer_bridge_rd_data;
+            end // Analogizer
             default:      begin bridge_rd_data <= 0;                    end
         endcase
     end
@@ -614,6 +622,13 @@ module core_top
         // Reset Switch
         .reset_sw         ( reset_sw           )
     );
+
+
+    logic ena_analogizer = 0;
+	 
+	 always @(posedge clk_74a) begin
+		if (bridge_wr && bridge_addr == 32'hf4000000) ena_analogizer <= bridge_wr_data[0];
+	 end
 
     //! ------------------------------------------------------------------------
     //! Audio
@@ -1049,5 +1064,55 @@ module core_top
     //     .play           ( ~CAS_motor     ),
     //     .rewind         ( CAS_rewind     )
     // );
+
+
+    // ========================================================================
+    // SNAC (Conf. A) PS/2 sobre cart_tran_pin30 (CLK) y cart_tran_pin31 (DATA)
+    // Solo recepcion: dir = 0 (los level-translators en modo cart->FPGA)
+    // ========================================================================
+    logic ps2_clk_oe, ps2_dat_oe;
+    logic ps2_clk_out, ps2_dat_out;
+    logic ps2_clk_in, ps2_dat_in;
+    logic [10:0] snac_ps2_key;
+
+    // --- Direccion de los translators: 0 = INPUT (leemos del teclado)
+    assign cart_tran_pin30_dir = ps2_clk_oe;   // = 1'b0 constante
+    assign cart_tran_pin31_dir = ps2_dat_oe;   // = 1'b0 constante
+
+    // --- IMPRESCINDIBLE en pin30: habilitar el circuito del translator.
+    //     Debe ir a '1' para que los level-translators e IO general
+    //     puedan mover el pin. Si lo dejas bajo/debil, el pull GBC /RES
+    //     se activa y el pin no funciona.
+    assign cart_pin30_pwroff_reset = (ena_analogizer) ? 1'b1 : 1'bz;
+
+    // --- Como no conducimos, dejamos los inout en Z desde la FPGA.
+    //     (dir=0 ya pone el translator en cart->FPGA; el 'z' evita
+    //      que la FPGA pelee el bus si algun sintetizador lo tomara literal)
+    assign cart_tran_pin30 = (ena_analogizer) ? (ps2_clk_oe ? ps2_clk_out : 1'bz) : 1'bz;  // -> queda 1'bz
+    assign cart_tran_pin31 = (ena_analogizer) ?  (ps2_dat_oe ? ps2_dat_out : 1'bz) : 1'bz;  // -> queda 1'bz
+
+    // --- Lectura de las lineas hacia el decoder
+    assign ps2_clk_in = (ena_analogizer) ? cart_tran_pin30 : 1'b1;   // CLK  del teclado
+    assign ps2_dat_in = (ena_analogizer) ? cart_tran_pin31 : 1'b1;   // DATA del teclado
+
+    ps2_snac_decoder
+    #(
+        .CLK_HZ(5_369_317), //! Frecuencia de clk
+        . WD_US(120)         //! Timeout de trama (us) para resync
+    )
+	 ps2_snac
+    (
+        .clk(clk_vid),
+        .reset(msx_reset | reset_sw ),
+        // Interfaz hacia el transceptor SNAC (unidireccional + control de sentido)
+        .ps2_clk_in(ps2_clk_in),   //! CLK  leido del transceptor (modo RX)
+        .ps2_dat_in(ps2_dat_in),   //! DATA leido del transceptor (modo RX)
+        .ps2_clk_oe(ps2_clk_oe),   //! 1 = FPGA conduce CLK  (aqui siempre 0)
+        .ps2_dat_oe(ps2_dat_oe),   //! 1 = FPGA conduce DATA (aqui siempre 0)
+        .ps2_clk_out(ps2_clk_out ),  //! valor a emitir si oe=1 (idle 1)
+        .ps2_dat_out(ps2_dat_out),  //! valor a emitir si oe=1 (idle 1)
+        // Salida decodificada
+        .ps2_key(snac_ps2_key)       //! {toggle, pressed, ext, sc[7:0]}
+    );
 
 endmodule

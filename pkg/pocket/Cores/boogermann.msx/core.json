@@ -2,9 +2,7 @@
     "core": {
         "magic": "APF_VER_1",
         "metadata": {
-            "platform_ids": [
-                "msx"
-            ],
+            "platform_ids": ["msx","analogizer"],
             "shortname": "msx",
             "description": "MSX is a standardized home computer architecture, announced by ASCII Corporation on June 16, 1983.",
             "author": "boogermann",
@@ -22,7 +20,7 @@
             },
             "hardware": {
                 "link_port": false,
-                "cartridge_adapter": -1
+                "cartridge_adapter": 0
             }
         },
         "cores": [
