@@ -72,17 +72,6 @@
                 "value": "0x00000100"
             },
             {
-                "name": "Border",
-                "id": 4,
-                "type": "check",
-                "enabled": true,
-                "persist": true,
-                "address": "0xF1000000",
-                "defaultval": 0,
-                "mask": "0xFFFFFDFF",
-                "value": "0x00000200"
-            },
-            {
                 "name": "Enable Joy2Key",
                 "id": 1000,
                 "type": "check",
