@@ -33,6 +33,18 @@
                 "parameters": "0x109",
                 "extensions": ["rom"],
                 "address": "0x00000000"
+            },
+            {
+                "name": "Analogizer config",
+                "id": 10,
+                "required": false,
+                "parameters": "0x1000000",
+                "filename": "analogizer.bin",
+                "extensions": [
+                    "bin"
+                ],
+                "address": "0xF7000000",
+                "nonvolatile": false
             }
         ]
     }
